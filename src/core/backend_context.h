@@ -167,13 +167,21 @@ class BackendResponder {
       const char* tensor_buffer,
       const TRITONSERVER_MemoryType tensor_memory_type,
       const int64_t tensor_memory_type_id);
+  bool FlushPendingScatterKernel(
+      const char* tensor_buffer,
+      const TRITONSERVER_MemoryType tensor_memory_type,
+      const int64_t tensor_memory_type_id);
+  Status LaunchScatterKernel(
+    const char* tensor_buffer, const TRITONSERVER_MemoryType tensor_memory_type,
+    const int64_t tensor_memory_type_id);
   bool SetFixedSizeOutputBuffer(
       std::unique_ptr<InferenceResponse>* response,
       InferenceResponse::Output* response_output, const size_t tensor_byte_size,
       const size_t tensor_offset, const char* tensor_buffer,
       const TRITONSERVER_MemoryType tensor_memory_type,
       const int64_t tensor_memory_type_id,
-      const TRITONSERVER_MemoryType use_pinned_memory_type);
+      const TRITONSERVER_MemoryType use_pinned_memory_type,
+      const bool use_kernel);
 
   bool need_sync_;
   const std::vector<std::unique_ptr<InferenceRequest>>& requests_;
@@ -191,9 +199,17 @@ class BackendResponder {
   size_t pending_pinned_offset_;
   ResponsesList pending_pinned_outputs_;
 
-  // Pinned memories that need to live over the lifetime of this
-  // BackendResponder object.
-  std::list<std::unique_ptr<AllocatedMemory>> pinned_memories_;
+  size_t pending_copy_kernel_buffer_byte_size_;
+  size_t pending_copy_kernel_buffer_offset_;
+  ResponsesList pending_copy_kernel_outputs_;
+  std::vector<std::unique_ptr<std::vector<int8_t*>>> output_ptr_buffer_host_;
+  std::vector<std::unique_ptr<std::vector<size_t>>> byte_size_buffer_host_;
+  std::vector<std::unique_ptr<std::vector<size_t>>>
+      byte_size_offset_buffer_host_;
+
+  // Allocated memories that need to live over the lifetime of this
+  // BackendInputCollector object.
+  std::list<std::unique_ptr<AllocatedMemory>> in_use_memories_;
 
   // Pinned memory buffers and the corresponding response outputs
   // where the final copy to the response is deferred until Finalize()
