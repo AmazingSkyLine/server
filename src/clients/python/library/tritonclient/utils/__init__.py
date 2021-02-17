@@ -45,12 +45,11 @@ class InferenceServerException(Exception):
 
     status : str
         The error code
-    
+
     debug_details : str
         The additional details on the error
 
     """
-
     def __init__(self, msg, status=None, debug_details=None):
         self._msg = msg
         self._status = status
@@ -186,14 +185,14 @@ def serialize_byte_tensor(input_tensor):
     # a 1-dimensional array containing the 4-byte byte size followed by the
     # actual element bytes. All elements are concatenated together in "C"
     # order.
-    if (input_tensor.dtype == np.object) or (input_tensor.dtype.type
-                                             == np.bytes_):
+    if (input_tensor.dtype == np.object) or \
+       (input_tensor.dtype.type == np.bytes_):
         flattened = bytes()
         for obj in np.nditer(input_tensor, flags=["refs_ok"], order='C'):
             # If directly passing bytes to BYTES type,
             # don't convert it to str as Python will encode the
             # bytes which may distort the meaning
-            if obj.dtype.type == np.bytes_:
+            if obj.dtype.type == np.bytes_ or obj.dtype.type == np.object_:
                 if type(obj.item()) == bytes:
                     s = obj.item()
                 else:
@@ -202,10 +201,7 @@ def serialize_byte_tensor(input_tensor):
                 s = str(obj).encode('utf-8')
             flattened += struct.pack("<I", len(s))
             flattened += s
-        flattened_array = np.asarray(flattened)
-        if not flattened_array.flags['C_CONTIGUOUS']:
-            flattened_array = np.ascontiguousarray(flattened_array)
-        return flattened_array
+        return flattened
     else:
         raise_error("cannot serialize bytes tensor: invalid datatype")
     return None
@@ -227,7 +223,6 @@ def deserialize_bytes_tensor(encoded_tensor):
     string_tensor : np.array
         The 1-D numpy array of type object containing the
         deserialized bytes in 'C' order.
-   
     """
     strs = list()
     offset = 0
@@ -238,4 +233,4 @@ def deserialize_bytes_tensor(encoded_tensor):
         sb = struct.unpack_from("<{}s".format(l), val_buf, offset)[0]
         offset += l
         strs.append(sb)
-    return (np.array(strs, dtype=bytes))
+    return (np.array(strs, dtype=np.object))

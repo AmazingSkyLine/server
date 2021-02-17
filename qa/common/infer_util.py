@@ -485,7 +485,7 @@ def infer_exact(tester,
                     output_data = results.as_numpy(result_name)
 
                 if (output_data.dtype == np.object) and (config[3] == False):
-                    output_data = output_data.astype(np.bytes_)
+                    output_data = output_data.astype(np.object_)
 
                 if result_name == OUTPUT0:
                     tester.assertTrue(
@@ -1014,7 +1014,7 @@ def infer_zero(tester,
                 output_data = results.as_numpy(result_name)
 
             if (output_data.dtype == np.object) and (config[3] == False):
-                output_data = output_data.astype(np.bytes_)
+                output_data = output_data.astype(np.object_)
 
             expected = expected_dict[result_name]
             tester.assertEqual(output_data.shape, expected.shape)

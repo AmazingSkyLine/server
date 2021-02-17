@@ -59,7 +59,7 @@ class TritonPythonModel:
             input_tensors = request.inputs()
             in_0 = pb_utils.get_input_tensor_by_name(request, "INPUT0")
             in_1 = pb_utils.get_input_tensor_by_name(request, "INPUT1")
-            if in_0.as_numpy().dtype.type is np.bytes_ or in_0.as_numpy(
+            if in_0.as_numpy().dtype.type is np.object_ or in_0.as_numpy(
             ).dtype == np.object:
                 out_0, out_1 = (in_0.as_numpy().astype(np.int32) + in_1.as_numpy().astype(np.int32),\
                     in_0.as_numpy().astype(np.int32) - in_1.as_numpy().astype(np.int32))

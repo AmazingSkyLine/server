@@ -1443,7 +1443,7 @@ class InferInput:
         self._input.parameters.pop('shared_memory_offset', None)
 
         if self._input.datatype == "BYTES":
-            self._raw_content = serialize_byte_tensor(input_tensor).tobytes()
+            self._raw_content = serialize_byte_tensor(input_tensor)
         else:
             self._raw_content = input_tensor.tobytes()
 

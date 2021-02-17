@@ -265,7 +265,7 @@ class PythonTest(tu.TestResultCollector):
         with httpclient.InferenceServerClient("localhost:8000") as client:
             utf8 = '😀'
             input_data = np.array([bytes(utf8, encoding='utf-8')],
-                                  dtype=np.bytes_)
+                                  dtype=np.object_)
             inputs = [
                 httpclient.InferInput("INPUT0", shape,
                                       np_to_triton_dtype(input_data.dtype))
