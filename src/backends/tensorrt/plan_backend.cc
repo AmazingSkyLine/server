@@ -343,6 +343,25 @@ PlanBackend::CreateExecutionContexts(
     }
   }
 
+  // If premature batching is set, we duplicate the context idx in
+  // available_context_queue_ to allow Run() return before the context is
+  // actually ready for next batch. The number of duplicates are limited
+  // by number of event sets to prevent too many iterations are run ahead and
+  // to avoid interference of the event communication in the previous execution
+  if (Config().optimization().premature_batching()) {
+    for (auto& queue : available_context_queue_) {
+      std::vector<size_t> context_in_queue;
+      while (!queue->Empty()) {
+        context_in_queue.emplace_back(queue->Get());
+      }
+      for (int count = 0; count < Context::EVENT_SET_COUNT; ++count) {
+        for (const auto context_idx : context_in_queue) {
+          queue->Put(context_idx);
+        }
+      }
+    }
+  }
+
   // Create a scheduler with one thread for each context queue specified for
   // this model. Each runner is responsible to dispatch tasks to contexts
   // assigned to the corresponding queue. For different scheduler type, the
@@ -509,6 +528,8 @@ PlanBackend::CreateExecutionContext(
       std::move(metric_reporter)));
   Context* context = static_cast<Context*>(contexts_.back().get());
   auto context_idx = contexts_.size() - 1;
+
+  context->premature_batching_ = Config().optimization().premature_batching();
 
   // Set the device before preparing the context.
   auto cuerr = cudaSetDevice(gpu_device);
@@ -2436,10 +2457,16 @@ PlanBackend::Context::Run(
 
   // For each input, concatenate input values from each request into
   // the corresponding binding.
+  // [FIXME] change below to match buffer set count (PR 2523)
+  //  buffer set count % EVENT_SET_COUNT = 1
+  int prev_set = (EVENT_SET_COUNT - 1 + next_set_) % EVENT_SET_COUNT;
+  auto prev_input_ready_event =
+      premature_batching_ ? events_[prev_set].ready_for_input_ : nullptr;
   std::vector<int64_t> input_dims{(int64_t)payload_->total_batch_size_};
   payload_->collector_.reset(new BackendInputCollector(
       payload_->requests_, &payload_->responses_, enable_pinned_input_,
-      input_copy_stream_, events_[next_set_].input_ready_));
+      input_copy_stream_, events_[next_set_].input_ready_,
+      prev_input_ready_event));
   for (int io_index = 0; io_index < num_expected_bindings_; ++io_index) {
     auto& io_binding_info = io_binding_infos_[io_index];
     int binding_index = binding_offset + io_index;
