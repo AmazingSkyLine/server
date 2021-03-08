@@ -312,9 +312,12 @@ DynamicBatchScheduler::SchedulerThread(
                        << " queued requests, current total = " << queue_.Size();
       } else if (queue_.Empty()) {
         wait_microseconds = default_wait_microseconds;
+        LOG_VERBOSE(1) << "TRITON_DS queue is empty, wait_microseconds=" << wait_microseconds;
       } else if (dynamic_batching_enabled_) {
         // Use dynamic batching to get request(s) to execute.
+        LOG_VERBOSE(1) << "TRITON_DS calculate batch size";
         wait_microseconds = GetDynamicBatch(runner_id);
+        LOG_VERBOSE(1) << "TRITON_DS calculate batch size finished, wait_microseconds=" << wait_microseconds;
 
         // Get requests that are rejected from searching dynamic batch.
         queue_.ReleaseRejectedRequests(&rejected_requests);
@@ -411,6 +414,7 @@ DynamicBatchScheduler::SchedulerThread(
       // If no requests are to be handled, wait for notification or
       // for the specified timeout before checking the queue again.
       if (wait_microseconds > 0) {
+        LOG_VERBOSE(1) << "TRITON_DS no requests, wait_microseconds=" << wait_microseconds;
         idle_scheduler_thread_cnt_++;
         std::chrono::microseconds wait_timeout(wait_microseconds);
         cv_.wait_for(lock, wait_timeout);
