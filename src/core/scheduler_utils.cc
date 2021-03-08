@@ -258,6 +258,7 @@ Status
 PriorityQueue::Enqueue(
     uint32_t priority_level, std::unique_ptr<InferenceRequest>& request)
 {
+  LOG_VERBOSE(1) << "TRITON_SCHEDULER enqueue, id=" << request->Id();
   auto status = queues_[priority_level].Enqueue(request);
   if (status.IsOk()) {
     size_++;
@@ -284,6 +285,7 @@ PriorityQueue::Dequeue(std::unique_ptr<InferenceRequest>* request)
     if (!queues_[front_priority_level_].Empty()) {
       RETURN_IF_ERROR(queues_[front_priority_level_].Dequeue(request));
       size_--;
+      LOG_VERBOSE(1) << "TRITON_SCHEDULER dequeue";
       return Status::Success;
     } else if (front_priority_level_ != last_priority_level_) {
       front_priority_level_++;
