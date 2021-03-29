@@ -39,6 +39,7 @@
 #include <mutex>
 #include <set>
 #include <sstream>
+#include <easy/profiler.h>
 
 #ifdef TRITON_ENABLE_ASAN
 #include <sanitizer/lsan_interface.h>
@@ -1173,8 +1174,11 @@ Parse(TRITONSERVER_ServerOptions** server_options, int argc, char** argv)
 int
 main(int argc, char** argv)
 {
+  EASY_PROFILER_ENABLE;
+  EASY_FUNCTION(profiler::colors::Magenta);
   // Parse command-line to create the options for the inference
   // server.
+  EASY_BLOCK("Start server");
   TRITONSERVER_ServerOptions* server_options = nullptr;
   if (!Parse(&server_options, argc, argv)) {
     exit(1);
@@ -1207,6 +1211,8 @@ main(int argc, char** argv)
   if (!StartEndpoints(server, trace_manager, shm_manager)) {
     exit(1);
   }
+  EASY_END_BLOCK;
+  profiler::dumpBlocksToFile("test_profile.prof");
 
   // Trap SIGINT and SIGTERM to allow server to exit gracefully
   signal(SIGINT, SignalHandler);

@@ -203,6 +203,9 @@ set(
   ../core/logging.h
 )
 
+list(APPEND CMAKE_PREFIX_PATH "../../easy_profiler/lib/cmake/easy_profiler")
+find_package(easy_profiler REQUIRED)  # STEP 1 #########################
+
 add_executable(
   main
   ${TRITONSERVER_SRCS}
@@ -246,6 +249,7 @@ target_link_libraries(
   PRIVATE ${CUDA_LIBRARIES}
 )
 endif() # TRITON_ENABLE_GPU
+target_link_libraries(main easy_profiler)  # STEP 2 ##########
 install(
   TARGETS main
   RUNTIME DESTINATION bin
