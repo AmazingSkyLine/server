@@ -203,6 +203,8 @@ set(
   ../core/logging.h
 )
 
+include_directories("../../easy_profiler/include")
+target_include_directories("../../easy_profiler/include")
 list(APPEND CMAKE_PREFIX_PATH "../../easy_profiler/lib/cmake/easy_profiler")
 find_package(easy_profiler REQUIRED)  # STEP 1 #########################
 
@@ -224,6 +226,7 @@ set_target_properties(
   PROPERTIES
     SKIP_BUILD_RPATH TRUE
     BUILD_WITH_INSTALL_RPATH TRUE
+    BUILD_WITH_EASY_PROFILER TRUE
     INSTALL_RPATH_USE_LINK_PATH FALSE
     INSTALL_RPATH "$\{ORIGIN\}/../lib"
 )
