@@ -204,7 +204,6 @@ set(
 )
 
 include_directories("../../easy_profiler/include")
-target_include_directories("../../easy_profiler/include")
 list(APPEND CMAKE_PREFIX_PATH "../../easy_profiler/lib/cmake/easy_profiler")
 find_package(easy_profiler REQUIRED)  # STEP 1 #########################
 
