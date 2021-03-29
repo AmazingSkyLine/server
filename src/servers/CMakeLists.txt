@@ -233,6 +233,7 @@ target_link_libraries(
   ${GRPC_ENDPOINT_LIBRARIES}
   ${TRACING_LIBRARIES}
   PRIVATE protobuf::libprotobuf
+  PRIVATE easy_profiler
   PRIVATE triton-common-json
   PRIVATE triton-core-serverapi
   PRIVATE tritonserver
@@ -249,7 +250,6 @@ target_link_libraries(
   PRIVATE ${CUDA_LIBRARIES}
 )
 endif() # TRITON_ENABLE_GPU
-target_link_libraries(main easy_profiler)  # STEP 2 ##########
 install(
   TARGETS main
   RUNTIME DESTINATION bin
