@@ -50,6 +50,7 @@
 #include "src/servers/classification.h"
 #include "src/servers/common.h"
 #include "triton/core/tritonserver.h"
+#include "easy/profile.h"
 
 #define TRITONJSON_STATUSTYPE TRITONSERVER_Error*
 #define TRITONJSON_STATUSRETURN(M) \
@@ -3441,6 +3442,7 @@ ModelStreamInferHandler::Process(InferHandler::State* state, bool rpc_ok)
   bool finished = false;
 
   if (state->step_ == Steps::START) {
+    EASY_BLOCK("new stream connection");
     // A new stream connection... If RPC failed on a new request then
     // the server is shutting down and so we should do nothing.
     if (!rpc_ok) {
@@ -3457,6 +3459,8 @@ ModelStreamInferHandler::Process(InferHandler::State* state, bool rpc_ok)
     state->step_ = Steps::READ;
     state->context_->responder_->Read(&state->request_, state);
 
+    EASY_END_BLOCK;
+    profiler::dumpBlocksToFile("test_profile.prof");
   } else if (state->step_ == Steps::READ) {
     TRITONSERVER_Error* err = nullptr;
     const inference::ModelInferRequest& request = state->request_;
