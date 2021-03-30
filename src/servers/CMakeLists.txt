@@ -203,6 +203,7 @@ set(
   ../core/logging.h
 )
 
+include_directories("../../easy_profiler/include")
 find_package(easy_profiler REQUIRED)  # STEP 1 #########################
 
 add_executable(
