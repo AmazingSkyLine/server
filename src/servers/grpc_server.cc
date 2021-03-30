@@ -50,7 +50,7 @@
 #include "src/servers/classification.h"
 #include "src/servers/common.h"
 #include "triton/core/tritonserver.h"
-#include "easy/profile.h"
+#include <easy/profile.h>
 
 #define TRITONJSON_STATUSTYPE TRITONSERVER_Error*
 #define TRITONJSON_STATUSRETURN(M) \
